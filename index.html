@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>用户调研 - 图片排序</title>
+  <style>
+    /* 简易重置和样式 */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: sans-serif;
+      background: #f0f0f0;
+      color: #333;
+      line-height: 1.5;
+    }
+    header, main, footer {
+      max-width: 800px;
+      margin: 20px auto;
+      background: #fff;
+      padding: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h1, h2, p {
+      margin: 0 0 15px 0;
+    }
+    .progress-container {
+      margin: 10px 0;
+      background-color: #e0e0e0;
+      border-radius: 4px;
+      height: 20px;
+      width: 100%;
+      overflow: hidden;
+    }
+    .progress-bar {
+      background-color: #4caf50;
+      height: 100%;
+      width: 0;
+      transition: width 0.3s ease;
+    }
+    .image-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .image-container img {
+      width: 120px;
+      height: 80px;
+      object-fit: cover;
+      cursor: move; /* 提示可拖拽 */
+      border: 2px solid #ccc;
+      border-radius: 4px;
+    }
+    .btn {
+      display: inline-block;
+      padding: 8px 16px;
+      background: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      text-decoration: none;
+      margin: 0 5px;
+    }
+    .btn:disabled {
+      background: #999;
+      cursor: not-allowed;
+    }
+    footer {
+      text-align: center;
+      margin-top: 40px;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 引言 -->
+  <header>
+    <h1>图片排序用户研究</h1>
+    <p>欢迎您参与我们的图片满意度排序实验。请按喜好程度从左到右对图片进行拖拽排序，最左边表示最满意，最右边表示最不满意。</p>
+  </header>
+
+  <!-- 主体内容 -->
+  <main>
+    <!-- 进度条与提示 -->
+    <h2>进度</h2>
+    <div class="progress-container">
+      <div id="progressBar" class="progress-bar"></div>
+    </div>
+    <p>当前进度：<span id="progressText"></span>/15 组</p>
+
+    <!-- 图片区域 -->
+    <div id="imageContainer" class="image-container">
+      <!-- 动态加载的图片会放到这里 -->
+    </div>
+
+    <!-- 按钮 -->
+    <button id="submitBtn" class="btn">确定</button>
+
+    <!-- 完成后的提示 -->
+    <div id="finishMessage" class="hidden">
+      <h2>感谢您的参与！</h2>
+      <p>您已完成所有 15 组图片的排序，谢谢！</p>
+    </div>
+
+  </main>
+
+  <!-- 感谢语 -->
+  <footer>
+    <p>再次感谢您对本研究的支持与贡献！</p>
+  </footer>
+
+  <script>
+    /********************************************************
+     * 配置：在这里放置每一组需要展示的图片链接（共15组，每组5张）
+     * 这是一个示例，实际使用时请替换为正确的图片路径
+     ********************************************************/
+    const imageSets = [
+      ["images/group1_img1.jpg","images/group1_img2.jpg","images/group1_img3.jpg","images/group1_img4.jpg","images/group1_img5.jpg"],
+      ["images/group2_img1.jpg","images/group2_img2.jpg","images/group2_img3.jpg","images/group2_img4.jpg","images/group2_img5.jpg"],
+      ["images/group3_img1.jpg","images/group3_img2.jpg","images/group3_img3.jpg","images/group3_img4.jpg","images/group3_img5.jpg"],
+      ["images/group4_img1.jpg","images/group4_img2.jpg","images/group4_img3.jpg","images/group4_img4.jpg","images/group4_img5.jpg"],
+      ["images/group5_img1.jpg","images/group5_img2.jpg","images/group5_img3.jpg","images/group5_img4.jpg","images/group5_img5.jpg"],
+      ["images/group6_img1.jpg","images/group6_img2.jpg","images/group6_img3.jpg","images/group6_img4.jpg","images/group6_img5.jpg"],
+      ["images/group7_img1.jpg","images/group7_img2.jpg","images/group7_img3.jpg","images/group7_img4.jpg","images/group7_img5.jpg"],
+      ["images/group8_img1.jpg","images/group8_img2.jpg","images/group8_img3.jpg","images/group8_img4.jpg","images/group8_img5.jpg"],
+      ["images/group9_img1.jpg","images/group9_img2.jpg","images/group9_img3.jpg","images/group9_img4.jpg","images/group9_img5.jpg"],
+      ["images/group10_img1.jpg","images/group10_img2.jpg","images/group10_img3.jpg","images/group10_img4.jpg","images/group10_img5.jpg"],
+      ["images/group11_img1.jpg","images/group11_img2.jpg","images/group11_img3.jpg","images/group11_img4.jpg","images/group11_img5.jpg"],
+      ["images/group12_img1.jpg","images/group12_img2.jpg","images/group12_img3.jpg","images/group12_img4.jpg","images/group12_img5.jpg"],
+      ["images/group13_img1.jpg","images/group13_img2.jpg","images/group13_img3.jpg","images/group13_img4.jpg","images/group13_img5.jpg"],
+      ["images/group14_img1.jpg","images/group14_img2.jpg","images/group14_img3.jpg","images/group14_img4.jpg","images/group14_img5.jpg"],
+      ["images/group15_img1.jpg","images/group15_img2.jpg","images/group15_img3.jpg","images/group15_img4.jpg","images/group15_img5.jpg"],
+    ];
+
+    // 当前进行到第几组（从 1 开始）
+    let currentGroupIndex = 0;
+    // 存储所有排序结果的数组
+    let allResults = [];
+
+    // 页面元素
+    const imageContainer = document.getElementById('imageContainer');
+    const submitBtn = document.getElementById('submitBtn');
+    const finishMessage = document.getElementById('finishMessage');
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+
+    /****************************************************************
+     * 初始化：加载第一组图片
+     ****************************************************************/
+    function init() {
+      currentGroupIndex = 1;
+      loadImages(currentGroupIndex);
+      updateProgress();
+    }
+
+    /****************************************************************
+     * 加载指定组的图片
+     ****************************************************************/
+    function loadImages(groupIndex) {
+      // 清空容器
+      imageContainer.innerHTML = "";
+
+      // 从 imageSets 中取出第 groupIndex 组图片的数组
+      const imgs = imageSets[groupIndex - 1]; 
+      if(!imgs) return;
+
+      // 创建并插入图片
+      imgs.forEach(src => {
+        const img = document.createElement('img');
+        img.src = src;
+        // 设置拖拽属性
+        img.draggable = true;
+
+        // 绑定事件
+        img.addEventListener('dragstart', onDragStart);
+        img.addEventListener('dragover', onDragOver);
+        img.addEventListener('drop', onDrop);
+
+        imageContainer.appendChild(img);
+      });
+    }
+
+    /****************************************************************
+     * 进度条更新
+     ****************************************************************/
+    function updateProgress() {
+      progressText.textContent = currentGroupIndex;
+      const percentage = (currentGroupIndex / 15) * 100;
+      progressBar.style.width = percentage + "%";
+    }
+
+    /****************************************************************
+     * 拖拽相关逻辑
+     ****************************************************************/
+    let draggedElement = null;
+
+    // 开始拖拽时
+    function onDragStart(e) {
+      draggedElement = e.target;
+      // 设置拖拽效果
+      e.dataTransfer.effectAllowed = "move";
+    }
+
+    // 拖拽经过的目标上
+    function onDragOver(e) {
+      e.preventDefault(); // 阻止默认，以便触发 onDrop
+      // 设置拖拽效果
+      e.dataTransfer.dropEffect = "move";
+    }
+
+    // 在目标上放下
+    function onDrop(e) {
+      e.preventDefault();
+      if (draggedElement && draggedElement !== e.target) {
+        // 获取当前容器
+        const children = Array.from(imageContainer.children);
+        const draggedIndex = children.indexOf(draggedElement);
+        const droppedIndex = children.indexOf(e.target);
+
+        // 调整顺序
+        if (draggedIndex < droppedIndex) {
+          // 拖拽的在前面，下标小，现在放到目标后面
+          imageContainer.insertBefore(draggedElement, e.target.nextSibling);
+        } else {
+          // 拖拽的在后面，下标大，现在放到目标前面
+          imageContainer.insertBefore(draggedElement, e.target);
+        }
+      }
+    }
+
+    /****************************************************************
+     * 点击“确定”按钮记录数据并加载下一组
+     ****************************************************************/
+    submitBtn.addEventListener('click', () => {
+      // 获取当前图片排序
+      const order = Array.from(imageContainer.querySelectorAll('img')).map(img => img.src);
+      // 存储每一组的结果 {group: x, order: [...]}
+      allResults.push({
+        group: currentGroupIndex,
+        order: order
+      });
+
+      // 也可将每一次的结果随时写入 localStorage
+      // localStorage.setItem('userStudyResults', JSON.stringify(allResults));
+
+      // 判断是否完成 15 组
+      if (currentGroupIndex >= 15) {
+        // 已完成
+        finishMessage.classList.remove('hidden');
+        submitBtn.disabled = true;
+        imageContainer.style.display = "none";
+        // 最终可以在控制台打印 或者 alert，或者再给一个下载按钮
+        console.log("所有结果：", allResults);
+
+        // 将最终结果存入 localStorage
+        localStorage.setItem('userStudyResults', JSON.stringify(allResults));
+
+        // 如果需要弹窗显示：
+        // alert("已完成所有排序，结果见控制台或 LocalStorage！");
+      } else {
+        // 进入下一组
+        currentGroupIndex++;
+        loadImages(currentGroupIndex);
+        updateProgress();
+      }
+    });
+
+    // 初始化调用
+    init();
+  </script>
+</body>
+</html>
