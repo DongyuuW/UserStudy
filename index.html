@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>用户调研 - 图片排序</title>
+  <title>User Study</title>
   <style>
-    /* 简易重置和样式 */
+    /* Basic resets and styling */
     body {
       margin: 0;
       padding: 0;
@@ -14,7 +14,7 @@
       line-height: 1.5;
     }
     header, main, footer {
-      max-width: 800px;
+      max-width: 1100px;
       margin: 20px auto;
       background: #fff;
       padding: 20px;
@@ -23,6 +23,8 @@
     h1, h2, p {
       margin: 0 0 15px 0;
     }
+
+    /* Progress bar */
     .progress-container {
       margin: 10px 0;
       background-color: #e0e0e0;
@@ -37,21 +39,46 @@
       width: 0;
       transition: width 0.3s ease;
     }
-    .image-container {
+
+    /* Container styling for each row of images */
+    .container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    justify-items: center;
+    }
+
+    .container1 {
+    text-align: center;
+    justify-items: center;
+    }
+
+  .image-box {
+      text-align: center;
+  }
+
+.image-box img {
+    width: 300px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+    .image-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
       gap: 10px;
       margin-bottom: 20px;
     }
-    .image-container img {
-      width: 120px;
-      height: 80px;
+    .image-row img {
+      width: 200px;
+      height: 200px;
       object-fit: cover;
-      cursor: move; /* 提示可拖拽 */
+      cursor: move; /* indicates draggable */
       border: 2px solid #ccc;
       border-radius: 4px;
     }
+
     .btn {
       display: inline-block;
       padding: 8px 16px;
@@ -67,10 +94,12 @@
       background: #999;
       cursor: not-allowed;
     }
+
     footer {
       text-align: center;
       margin-top: 40px;
     }
+
     .hidden {
       display: none;
     }
@@ -78,115 +107,228 @@
 </head>
 <body>
 
-  <!-- 引言 -->
+  <!-- Introduction -->
   <header>
-    <h1>图片排序用户研究</h1>
-    <p>欢迎您参与我们的图片满意度排序实验。请按喜好程度从左到右对图片进行拖拽排序，最左边表示最满意，最右边表示最不满意。</p>
+    <h1>Welcome to our User Study for AI-based caricature generation!</h1>
+    <h3>
+      Thank you very much for your support of our research.
+       We will present you with several photos of individuals, along with sketches that provide shape information for the caricatures. 
+       In the caricatures generated below, please rank them from best to worst based on different evaluation criteria (you can drag and rearrange the images within each row).
+    </h3>
   </header>
 
-  <!-- 主体内容 -->
+  <!-- Main Content -->
   <main>
-    <!-- 进度条与提示 -->
-    <h2>进度</h2>
+    <!-- Progress Bar and status -->
+    <h2>Progress</h2>
     <div class="progress-container">
       <div id="progressBar" class="progress-bar"></div>
     </div>
-    <p>当前进度：<span id="progressText"></span>/15 组</p>
+    <p>Current progress: <span id="progressText"></span>/15 groups</p>
 
-    <!-- 图片区域 -->
-    <div id="imageContainer" class="image-container">
-      <!-- 动态加载的图片会放到这里 -->
+
+    <div id="condContainer" class="container">
+    <div id="identity" class="image-box">
+        <h2>Photo</h2>
     </div>
+    <div id="shape" class="image-box">
+        <h2>Sketch</h2>
+    </div>
+  </div>
 
-    <!-- 按钮 -->
-    <button id="submitBtn" class="btn">确定</button>
+    <!-- Rows for the current group -->
+    <h3 id="comment1">
+      Evaluation criteria: If the caricatures match the sketch's shape? (Leftmost: Best, Rightmost: Worst)
+    </h3>
+    <div id="row1Container" class="image-row"></div>
+    <h3 id="comment2">
+      Evaluation criteria: If the caricatures sufficiently reflects the facial features of the photo? (Leftmost: Best, Rightmost: Worst)
+    </h3>
+    <div id="row2Container" class="image-row"></div>
+    <h3 id="comment3">
+      Evaluation criteria: Based on the above two criteria, your overall assessment of the caricatures. (Leftmost: Best, Rightmost: Worst)
+    </h3>
+    <div id="row3Container" class="image-row"></div>
 
-    <!-- 完成后的提示 -->
+    <!-- Button -->
+    <div class="container1">
+    <button id="submitBtn" class="btn">Confirm</button>
+    </div>
+    <!-- Completion Message -->
     <div id="finishMessage" class="hidden">
-      <h2>感谢您的参与！</h2>
-      <p>您已完成所有 15 组图片的排序，谢谢！</p>
+      <h2>Thank You!</h2>
+      <p>You have completed all 15 groups. We appreciate your participation!</p>
     </div>
-
   </main>
 
-  <!-- 感谢语 -->
+  <!-- Footer Thank You -->
   <footer>
-    <p>再次感谢您对本研究的支持与贡献！</p>
+    <p>Thank you for helping us with this study!</p>
   </footer>
 
   <script>
     /********************************************************
-     * 配置：在这里放置每一组需要展示的图片链接（共15组，每组5张）
-     * 这是一个示例，实际使用时请替换为正确的图片路径
+     * Configuration: imageSets is an array of 15 groups.
+     * Each group is itself an array of 3 rows.
+     * Each row is an array of 5 image URLs.
+     * Example data structure:
+     * imageSets = [
+     *   [
+     *     ["group1_row1_img1.jpg", ... 5 images total],
+     *     ["group1_row2_img1.jpg", ... 5 images total],
+     *     ["group1_row3_img1.jpg", ... 5 images total]
+     *   ],
+     *   [
+     *     ["group2_row1_img1.jpg", ... ],
+     *     ["group2_row2_img1.jpg", ... ],
+     *     ["group2_row3_img1.jpg", ... ]
+     *   ],
+     *   ...
+     * ];
      ********************************************************/
-    const imageSets = [
-      ["images/group1_img1.jpg","images/group1_img2.jpg","images/group1_img3.jpg","images/group1_img4.jpg","images/group1_img5.jpg"],
-      ["images/group2_img1.jpg","images/group2_img2.jpg","images/group2_img3.jpg","images/group2_img4.jpg","images/group2_img5.jpg"],
-      ["images/group3_img1.jpg","images/group3_img2.jpg","images/group3_img3.jpg","images/group3_img4.jpg","images/group3_img5.jpg"],
-      ["images/group4_img1.jpg","images/group4_img2.jpg","images/group4_img3.jpg","images/group4_img4.jpg","images/group4_img5.jpg"],
-      ["images/group5_img1.jpg","images/group5_img2.jpg","images/group5_img3.jpg","images/group5_img4.jpg","images/group5_img5.jpg"],
-      ["images/group6_img1.jpg","images/group6_img2.jpg","images/group6_img3.jpg","images/group6_img4.jpg","images/group6_img5.jpg"],
-      ["images/group7_img1.jpg","images/group7_img2.jpg","images/group7_img3.jpg","images/group7_img4.jpg","images/group7_img5.jpg"],
-      ["images/group8_img1.jpg","images/group8_img2.jpg","images/group8_img3.jpg","images/group8_img4.jpg","images/group8_img5.jpg"],
-      ["images/group9_img1.jpg","images/group9_img2.jpg","images/group9_img3.jpg","images/group9_img4.jpg","images/group9_img5.jpg"],
-      ["images/group10_img1.jpg","images/group10_img2.jpg","images/group10_img3.jpg","images/group10_img4.jpg","images/group10_img5.jpg"],
-      ["images/group11_img1.jpg","images/group11_img2.jpg","images/group11_img3.jpg","images/group11_img4.jpg","images/group11_img5.jpg"],
-      ["images/group12_img1.jpg","images/group12_img2.jpg","images/group12_img3.jpg","images/group12_img4.jpg","images/group12_img5.jpg"],
-      ["images/group13_img1.jpg","images/group13_img2.jpg","images/group13_img3.jpg","images/group13_img4.jpg","images/group13_img5.jpg"],
-      ["images/group14_img1.jpg","images/group14_img2.jpg","images/group14_img3.jpg","images/group14_img4.jpg","images/group14_img5.jpg"],
-      ["images/group15_img1.jpg","images/group15_img2.jpg","images/group15_img3.jpg","images/group15_img4.jpg","images/group15_img5.jpg"],
-    ];
 
-    // 当前进行到第几组（从 1 开始）
+    const imgSet = ["id00ske3.jpg", "id01ske2.jpg", "id02ske5.jpg", "id03ske7.jpg", "id04ske9.jpg", "id05ske10.jpg", "id10ske14.jpg",
+                    "id07ske13.jpg", "id07ske27.jpg", "id07ske31.jpg", "id07ske47.jpg", "id07ske50.jpg", "id07ske51.jpg", "id07ske54.jpg", "id07ske59.jpg",
+                    "id11ske13.jpg", "id11ske27.jpg", "id11ske31.jpg", "id11ske47.jpg", "id11ske50.jpg", "id11ske51.jpg", "id11ske54.jpg", "id11ske59.jpg",
+                    "id12ske13.jpg", "id12ske27.jpg", "id12ske31.jpg", "id12ske47.jpg", "id12ske50.jpg", "id12ske51.jpg", "id12ske54.jpg", "id12ske59.jpg",
+                    "id44ske13.jpg", "id44ske27.jpg", "id44ske31.jpg", "id44ske47.jpg", "id44ske50.jpg", "id44ske51.jpg", "id44ske54.jpg", "id44ske59.jpg",
+                    "id45ske13.jpg", "id45ske27.jpg", "id45ske31.jpg", "id45ske47.jpg", "id45ske50.jpg", "id45ske51.jpg", "id45ske54.jpg", "id45ske59.jpg",
+                    "id46ske13.jpg", "id46ske27.jpg", "id46ske31.jpg", "id46ske47.jpg", "id46ske50.jpg", "id46ske51.jpg", "id46ske54.jpg", "id46ske59.jpg",
+                    "id47ske13.jpg", "id47ske27.jpg", "id47ske31.jpg", "id47ske47.jpg", "id47ske50.jpg", "id47ske51.jpg", "id47ske54.jpg", "id47ske59.jpg",
+                    "id48ske13.jpg", "id48ske27.jpg", "id48ske31.jpg", "id48ske47.jpg", "id48ske50.jpg", "id48ske51.jpg", "id48ske54.jpg", "id48ske59.jpg",
+                    "id49ske61.jpg", "id50ske60.jpg", "id52ske63.jpg", "id53ske64.jpg", "id54ske65.jpg"]
+
+    function getUniqueRandomNumbers(count, min, max) {
+    if (max - min + 1 < count) {
+        throw new Error("Range is too narrow.");
+    }
+
+    let numbers = Array.from({ length: max - min + 1 }, (_, i) => i + min);
+    for (let i = numbers.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [numbers[i], numbers[j]] = [numbers[j], numbers[i]];
+    }
+
+    return numbers.slice(0, count);
+    }
+    let sample_ids = getUniqueRandomNumbers(15, 0, 63);
+
+    // Tracking the current group index (1-based)
     let currentGroupIndex = 0;
-    // 存储所有排序结果的数组
+    // Array to store all results
     let allResults = [];
 
-    // 页面元素
-    const imageContainer = document.getElementById('imageContainer');
-    const submitBtn = document.getElementById('submitBtn');
-    const finishMessage = document.getElementById('finishMessage');
-    const progressBar = document.getElementById('progressBar');
-    const progressText = document.getElementById('progressText');
-
+    // DOM elements
+    const row1Container = document.getElementById("row1Container");
+    const row2Container = document.getElementById("row2Container");
+    const row3Container = document.getElementById("row3Container");
+    const condContainer = document.getElementById("condContainer");
+    const submitBtn = document.getElementById("submitBtn");
+    const finishMessage = document.getElementById("finishMessage");
+    const progressBar = document.getElementById("progressBar");
+    const progressText = document.getElementById("progressText");
+    const identity = document.getElementById("identity");
+    const shape = document.getElementById("shape");
+    const comment1 = document.getElementById("comment1");
+    const comment2 = document.getElementById("comment2");
+    const comment3 = document.getElementById("comment3");
     /****************************************************************
-     * 初始化：加载第一组图片
+     * Initialization: Load the first group
      ****************************************************************/
     function init() {
       currentGroupIndex = 1;
-      loadImages(currentGroupIndex);
+      loadGroupImages(currentGroupIndex);
       updateProgress();
+    }
+    function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1)); 
+        [array[i], array[j]] = [array[j], array[i]];  
+    }
+    return array;
     }
 
     /****************************************************************
-     * 加载指定组的图片
+     * Load images for a given group (3 rows)
      ****************************************************************/
-    function loadImages(groupIndex) {
-      // 清空容器
-      imageContainer.innerHTML = "";
+    function loadGroupImages(groupIndex) {
+      // Clear existing content
+      row1Container.innerHTML = "";
+      row2Container.innerHTML = "";
+      row3Container.innerHTML = "";
 
-      // 从 imageSets 中取出第 groupIndex 组图片的数组
-      const imgs = imageSets[groupIndex - 1]; 
-      if(!imgs) return;
+      const img_idx = sample_ids[groupIndex - 1];
+      const img_name = imgSet[img_idx]
+      const id_idx = img_name.slice(2, 4)
+      const id_name = id_idx + ".jpg"
+      const ske_idx = img_name.slice(7, -4)
+      const ske_name = ske_idx + ".jpg"
+      let group = ["compare/"+img_name, "democaricature/"+img_name, "stylecarigan/"+id_name, "warpgan/"+id_name, "compare_woalign/"+img_name]
+ 
+      group = shuffleArray(group);
+      // Retrieve the 3-row structure for this group
+      if (!group) return;
+      // group[0] => row1 array of 5 images
+      // group[1] => row2 array of 5 images
+      // group[2] => row3 array of 5 images
 
-      // 创建并插入图片
-      imgs.forEach(src => {
+      const ske_img = document.createElement('img');
+
+      const exist_ske = document.getElementById("ske_present");
+      if (exist_ske){
+        exist_ske.remove();}
+      ske_img.id = "ske_present";
+      ske_img.src = "ske_single/" + ske_name;
+      shape.appendChild(ske_img);
+
+      const id_img = document.createElement('img');
+
+      const exist_id = document.getElementById("id_present");
+      if (exist_id){
+        exist_id.remove();}
+
+      id_img.src = "id_single/" + id_name;
+      id_img.id = "id_present";
+      identity.appendChild(id_img);
+
+      // Create images for row 1
+      group.forEach(src => {
         const img = document.createElement('img');
         img.src = src;
-        // 设置拖拽属性
+        // Enable dragging
         img.draggable = true;
-
-        // 绑定事件
+        // Bind drag events
         img.addEventListener('dragstart', onDragStart);
         img.addEventListener('dragover', onDragOver);
         img.addEventListener('drop', onDrop);
+        row1Container.appendChild(img);
+      });
 
-        imageContainer.appendChild(img);
+      // Create images for row 2
+      group.forEach(src => {
+        const img = document.createElement('img');
+        img.src = src;
+        img.draggable = true;
+        img.addEventListener('dragstart', onDragStart);
+        img.addEventListener('dragover', onDragOver);
+        img.addEventListener('drop', onDrop);
+        row2Container.appendChild(img);
+      });
+
+      // Create images for row 3
+      group.forEach(src => {
+        const img = document.createElement('img');
+        img.src = src;
+        img.draggable = true;
+        img.addEventListener('dragstart', onDragStart);
+        img.addEventListener('dragover', onDragOver);
+        img.addEventListener('drop', onDrop);
+        row3Container.appendChild(img);
       });
     }
 
     /****************************************************************
-     * 进度条更新
+     * Update progress bar
      ****************************************************************/
     function updateProgress() {
       progressText.textContent = currentGroupIndex;
@@ -195,82 +337,95 @@
     }
 
     /****************************************************************
-     * 拖拽相关逻辑
+     * Drag and drop logic (per row)
+     * Each row is an independent container.
      ****************************************************************/
     let draggedElement = null;
 
-    // 开始拖拽时
+    // On drag start
     function onDragStart(e) {
       draggedElement = e.target;
-      // 设置拖拽效果
       e.dataTransfer.effectAllowed = "move";
     }
 
-    // 拖拽经过的目标上
+    // On drag over (required for dropping to work)
     function onDragOver(e) {
-      e.preventDefault(); // 阻止默认，以便触发 onDrop
-      // 设置拖拽效果
+      e.preventDefault();
       e.dataTransfer.dropEffect = "move";
     }
 
-    // 在目标上放下
+    // On drop
     function onDrop(e) {
       e.preventDefault();
       if (draggedElement && draggedElement !== e.target) {
-        // 获取当前容器
-        const children = Array.from(imageContainer.children);
+        // The container we're dropping into
+        const container = e.target.parentNode;
+        const children = Array.from(container.children);
         const draggedIndex = children.indexOf(draggedElement);
         const droppedIndex = children.indexOf(e.target);
 
-        // 调整顺序
         if (draggedIndex < droppedIndex) {
-          // 拖拽的在前面，下标小，现在放到目标后面
-          imageContainer.insertBefore(draggedElement, e.target.nextSibling);
+          container.insertBefore(draggedElement, e.target.nextSibling);
         } else {
-          // 拖拽的在后面，下标大，现在放到目标前面
-          imageContainer.insertBefore(draggedElement, e.target);
+          container.insertBefore(draggedElement, e.target);
         }
       }
     }
 
     /****************************************************************
-     * 点击“确定”按钮记录数据并加载下一组
+     * On "Confirm" button click
      ****************************************************************/
     submitBtn.addEventListener('click', () => {
-      // 获取当前图片排序
-      const order = Array.from(imageContainer.querySelectorAll('img')).map(img => img.src);
-      // 存储每一组的结果 {group: x, order: [...]}
+      // Collect the current order for each row
+      const row1Order = Array.from(row1Container.querySelectorAll('img')).map(img => img.src);
+      const row2Order = Array.from(row2Container.querySelectorAll('img')).map(img => img.src);
+      const row3Order = Array.from(row3Container.querySelectorAll('img')).map(img => img.src);
+
+      // Store the result
+      // You can store each row's order separately, or combine them.
       allResults.push({
         group: currentGroupIndex,
-        order: order
+        row1: row1Order,
+        row2: row2Order,
+        row3: row3Order
       });
+      localStorage.setItem('userStudyResults', JSON.stringify(allResults));
 
-      // 也可将每一次的结果随时写入 localStorage
-      // localStorage.setItem('userStudyResults', JSON.stringify(allResults));
-
-      // 判断是否完成 15 组
+      // Check if we have finished all 15 groups
       if (currentGroupIndex >= 15) {
-        // 已完成
+        // Finished
         finishMessage.classList.remove('hidden');
         submitBtn.disabled = true;
-        imageContainer.style.display = "none";
-        // 最终可以在控制台打印 或者 alert，或者再给一个下载按钮
-        console.log("所有结果：", allResults);
 
-        // 将最终结果存入 localStorage
-        localStorage.setItem('userStudyResults', JSON.stringify(allResults));
+        // Optionally hide the row containers
+        row1Container.style.display = "none";
+        row2Container.style.display = "none";
+        row3Container.style.display = "none";
+        condContainer.style.display = "none";
+        comment1.style.display = "none";
+        comment2.style.display = "none";
+        comment3.style.display = "none";
+        // Final results in the console
+        console.log("All results:", allResults);
 
-        // 如果需要弹窗显示：
-        // alert("已完成所有排序，结果见控制台或 LocalStorage！");
+        // Store final data in localStorage
+      fetch("http://10.78.114.41:3000/data", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(allResults)
+        }).then(response => response.json()).then(result => console.log("Response:", result)).catch(error => console.error("请求失败:", error));
+
       } else {
-        // 进入下一组
+        // Load next group
         currentGroupIndex++;
-        loadImages(currentGroupIndex);
+        loadGroupImages(currentGroupIndex);
         updateProgress();
       }
     });
 
-    // 初始化调用
+    // Initialize on page load
     init();
   </script>
 </body>
