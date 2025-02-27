@@ -186,7 +186,6 @@
      *   ...
      * ];
      ********************************************************/
-    const fs = require("fs");
     const imgSet = ["id00ske3.jpg", "id01ske2.jpg", "id02ske5.jpg", "id03ske7.jpg", "id04ske9.jpg", "id05ske10.jpg", "id10ske14.jpg",
                     "id07ske13.jpg", "id07ske27.jpg", "id07ske31.jpg", "id07ske47.jpg", "id07ske50.jpg", "id07ske51.jpg", "id07ske54.jpg", "id07ske59.jpg",
                     "id11ske13.jpg", "id11ske27.jpg", "id11ske31.jpg", "id11ske47.jpg", "id11ske50.jpg", "id11ske51.jpg", "id11ske54.jpg", "id11ske59.jpg",
@@ -196,7 +195,7 @@
                     "id46ske13.jpg", "id46ske27.jpg", "id46ske31.jpg", "id46ske47.jpg", "id46ske50.jpg", "id46ske51.jpg", "id46ske54.jpg", "id46ske59.jpg",
                     "id47ske13.jpg", "id47ske27.jpg", "id47ske31.jpg", "id47ske47.jpg", "id47ske50.jpg", "id47ske51.jpg", "id47ske54.jpg", "id47ske59.jpg",
                     "id48ske13.jpg", "id48ske27.jpg", "id48ske31.jpg", "id48ske47.jpg", "id48ske50.jpg", "id48ske51.jpg", "id48ske54.jpg", "id48ske59.jpg",
-                    "id49ske61.jpg", "id50ske60.jpg", "id52ske63.jpg", "id53ske64.jpg", "id54ske65.jpg"]
+                    "id49ske61.jpg", "id50ske60.jpg", "id52ske63.jpg", "id53ske64.jpg", "id54ske65.jpg"];
 
     function getUniqueRandomNumbers(count, min, max) {
     if (max - min + 1 < count) {
